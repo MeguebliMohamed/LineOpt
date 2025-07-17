@@ -1,94 +1,121 @@
 <div class="truck-detail-container">
   <div class="header">
-    <h2>{{ isEditMode ? 'Modifier' : 'Détails' }} Camion</h2>
-    
+    <h2>{{ isEditMode ? 'Modifier Camion' : 'Détails Camion' }}</h2>
     <div class="actions">
-      <div *ngIf="!isEditMode && truck" class="d-flex align-items-center me-2">
-        <div class="dropdown">
-          <button class="btn btn-outline-primary dropdown-toggle" type="button" id="statusDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-            Changer statut
+      <div *ngIf="!isEditMode && truck" class="status-dropdown">
+        <button class="dropdown-toggle" (click)="toggleStatusDropdown()" [disabled]="saving">
+          <span>Changer statut</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 9l6 6 6-6"/>
+          </svg>
+        </button>
+        <div class="dropdown-menu" *ngIf="showStatusDropdown">
+          <button *ngFor="let status of statusList"
+                  class="dropdown-item"
+                  [ngClass]="{'active': truck && truck.statut === status[0]}"
+                  (click)="changeStatus(status[0])">
+            {{ status[1] }}
           </button>
-          <ul class="dropdown-menu" aria-labelledby="statusDropdown">
-            <li *ngFor="let status of statusList">
-              <a class="dropdown-item" href="javascript:void(0)" 
-                 [class.active]="truck && truck.statut === status[0]"
-                 (click)="changeStatus(status[0])">
-                {{ status[1] }}
-              </a>
-            </li>
-          </ul>
         </div>
       </div>
-      <button *ngIf="!isEditMode" (click)="toggleEditMode()" class="btn btn-primary">
-        <i class="bi bi-pencil"></i> Modifier
+      <button *ngIf="!isEditMode" class="edit-button" (click)="toggleEditMode()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+        </svg>
+        Modifier
       </button>
-      <button *ngIf="!isEditMode && truck" (click)="deleteTruck()" class="btn btn-danger" [disabled]="deleting">
-        <i class="bi bi-trash"></i> {{ deleting ? 'Suppression...' : 'Supprimer' }}
+      <button *ngIf="!isEditMode && truck" class="delete-button" (click)="openDeleteDialog()" [disabled]="deleting">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 6h18M6 6V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2m-12 0v14a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V6m-9 4v10m4-10v10"/>
+        </svg>
+        {{ deleting ? 'Suppression...' : 'Supprimer' }}
       </button>
-      <button [routerLink]="['/trucks']" class="btn btn-secondary">
-        <i class="bi bi-arrow-left"></i> Retour
+      <button class="back-button" [routerLink]="['/trucks']">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M15 18l-6-6 6-6"/>
+        </svg>
+        Retour
       </button>
     </div>
   </div>
-  
-  <div *ngIf="loading" class="loading-spinner">
-    <span>Chargement...</span>
+
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <span class="loading-text">Chargement...</span>
   </div>
-  
-  <div *ngIf="error" class="alert alert-danger">
-    {{ error }}
+
+  <div *ngIf="error" class="alert">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"/>
+      <path d="M12 8v4M12 16h.01"/>
+    </svg>
+    <span>{{ error }}</span>
   </div>
-  
-  <form *ngIf="!loading && truck" [formGroup]="truckForm" (ngSubmit)="onSubmit()">
-    <div class="mb-3">
-      <label for="matricule" class="form-label">Matricule</label>
-      <input type="text" class="form-control" id="matricule" formControlName="matricule">
-      <div *ngIf="truckForm.get('matricule')?.invalid && truckForm.get('matricule')?.touched" class="text-danger">
+
+  <form *ngIf="!loading && truck" [formGroup]="truckForm" (ngSubmit)="onSubmit()" class="form-content">
+    <div class="form-group">
+      <label for="matricule">Matricule</label>
+      <input id="matricule" type="text" formControlName="matricule" placeholder="Ex: TRUCK-001">
+      <span *ngIf="truckForm.get('matricule')?.hasError('required') && truckForm.get('matricule')?.touched" class="error-text">
         Matricule est obligatoire
-      </div>
+      </span>
     </div>
-    
-    <div class="mb-3">
-      <label for="statut" class="form-label">Statut</label>
-      <div class="d-flex align-items-center">
-        <select class="form-select" id="statut" formControlName="statut">
-          <option *ngFor="let status of statusList" [value]="status[0]">{{ status[1] }}</option>
-        </select>
-        <button *ngIf="!isEditMode" type="button" class="btn btn-primary ms-2" 
-                [disabled]="saving" 
-                (click)="changeStatus(truckForm.get('statut')?.value)">
-          <span *ngIf="!saving">Changer statut</span>
-          <span *ngIf="saving">Mise à jour...</span>
-        </button>
-      </div>
+
+    <div class="form-group">
+      <label for="statut">Statut</label>
+      <select id="statut" formControlName="statut" [disabled]="!isEditMode">
+        <option *ngFor="let status of statusList" [value]="status[0]">{{ status[1] }}</option>
+      </select>
+      <span *ngIf="truckForm.get('statut')?.hasError('required') && truckForm.get('statut')?.touched" class="error-text">
+        Statut est obligatoire
+      </span>
     </div>
-    
-    <div class="mb-3">
-      <label for="client_par_defaut" class="form-label">Client par défaut</label>
-      <input type="number" class="form-control" id="client_par_defaut" formControlName="client_par_defaut">
-      <small class="form-text text-muted">Laissez vide si aucun client par défaut</small>
+
+    <div class="form-group">
+      <label for="client_par_defaut">Client par défaut</label>
+      <input id="client_par_defaut" type="text" formControlName="client_par_defaut" placeholder="Ex: 12345">
+      <span class="form-hint">Laissez vide si aucun client par défaut</span>
     </div>
-    
-    <div class="mb-3">
-      <label class="form-label">Articles</label>
+
+    <div class="form-group">
+      <label>Articles</label>
       <div *ngIf="truck && truck.articles.length === 0" class="text-muted">
         Aucun article associé
       </div>
-      <ul *ngIf="truck && truck.articles.length > 0" class="list-group">
-        <li *ngFor="let articleId of truck.articles" class="list-group-item">
-          Article ID: {{ articleId }}
-        </li>
+      <ul *ngIf="truck && truck.articles.length > 0" class="articles-list">
+        <li *ngFor="let articleId of truck.articles">{{ articleId }}</li>
       </ul>
     </div>
-    
+
     <div *ngIf="isEditMode" class="form-actions">
-      <button type="submit" [disabled]="truckForm.invalid || saving" class="btn btn-primary">
-        <span *ngIf="saving">Enregistrement...</span>
-        <span *ngIf="!saving">Enregistrer</span>
+      <button type="submit" class="submit-button" [disabled]="truckForm.invalid || saving">
+        <span *ngIf="saving" class="loading-icon">⌛</span>
+        {{ saving ? 'Enregistrement...' : 'Enregistrer' }}
       </button>
-      <button type="button" (click)="toggleEditMode()" class="btn btn-outline-secondary">
-        Annuler
-      </button>
+      <button type="button" class="cancel-button" (click)="toggleEditMode()" [disabled]="saving">Annuler</button>
     </div>
   </form>
+
+  <div *ngIf="showDeleteDialog" class="dialog-overlay">
+    <div class="dialog">
+      <div class="dialog-header">
+        <h3>Confirmer la suppression</h3>
+        <button class="close-button" (click)="closeDeleteDialog()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div class="dialog-content">
+        <p>Voulez-vous vraiment supprimer le camion <strong>{{ truck?.matricule }}</strong> ? Cette action est irréversible.</p>
+      </div>
+      <div class="dialog-actions">
+        <button class="dialog-button cancel" (click)="closeDeleteDialog()">Annuler</button>
+        <button class="dialog-button confirm" (click)="confirmDelete()" [disabled]="deleting">
+          {{ deleting ? 'Suppression...' : 'Confirmer' }}
+        </button>
+      </div>
+    </div>
+  </div>
 </div>

@@ -1,43 +1,72 @@
-<div class="container mt-4">
-  <h2>Créer un nouvel article</h2>
-  
-  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
-  
-  <form [formGroup]="articleForm" (ngSubmit)="onSubmit()">
-    <div class="mb-3">
+<div class="article-create-container">
+  <div class="header-section">
+    <h2 class="page-title">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/>
+        <path d="M18 9l-6 6M12 9l6 6"/>
+      </svg>
+      Créer un nouvel article
+    </h2>
+    <a routerLink="/articles" class="back-button">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+      </svg>
+    </a>
+  </div>
+
+  <div *ngIf="error" class="alert">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"/>
+      <path d="M12 8v4M12 16h.01"/>
+    </svg>
+    <span>{{ error }}</span>
+  </div>
+
+  <form [formGroup]="articleForm" (ngSubmit)="onSubmit()" class="form-content">
+    <div class="form-group">
       <label for="name" class="form-label">Nom</label>
-      <input 
-        type="text" 
-        class="form-control" 
-        id="name" 
+      <input
+        id="name"
+        name="name"
         formControlName="name"
-        [ngClass]="{'is-invalid': submitted && f['name'].errors}"
+        type="text"
+        placeholder="Ex: Article 001"
+        class="form-input"
+        [ngClass]="{'form-input-error': submitted && f['name'].errors}"
       >
-      <div *ngIf="submitted && f['name'].errors" class="invalid-feedback">
-        <div *ngIf="f['name'].errors?.['required']">Le nom est requis</div>
+      <div *ngIf="submitted && f['name'].errors" class="error-message">
+        <span *ngIf="f['name'].errors?.['required']">Le nom est requis</span>
+        <span *ngIf="f['name'].errors?.['maxlength']">Le nom ne peut pas dépasser 255 caractères</span>
       </div>
     </div>
-    
-    <div class="mb-3">
+
+    <div class="form-group">
       <label for="type" class="form-label">Type</label>
-      <input 
-        type="text" 
-        class="form-control" 
-        id="type" 
+      <input
+        id="type"
+        name="type"
         formControlName="type"
-        [ngClass]="{'is-invalid': submitted && f['type'].errors}"
+        type="text"
+        placeholder="Ex: Matériau"
+        class="form-input"
+        [ngClass]="{'form-input-error': submitted && f['type'].errors}"
       >
-      <div *ngIf="submitted && f['type'].errors" class="invalid-feedback">
-        <div *ngIf="f['type'].errors?.['required']">Le type est requis</div>
+      <div *ngIf="submitted && f['type'].errors" class="error-message">
+        <span *ngIf="f['type'].errors?.['required']">Le type est requis</span>
+        <span *ngIf="f['type'].errors?.['maxlength']">Le type ne peut pas dépasser 100 caractères</span>
       </div>
     </div>
-    
-    <div class="d-flex gap-2">
-      <button type="submit" class="btn btn-primary" [disabled]="saving">
-        <span *ngIf="saving" class="spinner-border spinner-border-sm me-1"></span>
-        Enregistrer
+
+    <div class="form-actions">
+      <button type="submit" class="submit-button" [disabled]="saving">
+        <svg *ngIf="saving" class="spinner" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12a8 8 0 018-8v2a6 6 0 00-6 6h2z"></path>
+        </svg>
+        <span>{{ saving ? 'Enregistrement...' : 'Enregistrer' }}</span>
       </button>
-      <button type="button" class="btn btn-secondary" routerLink="/articles">Annuler</button>
+      <button type="button" class="cancel-button" (click)="router.navigate(['/articles'])" [disabled]="saving">
+        Annuler
+      </button>
     </div>
   </form>
 </div>

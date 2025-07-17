@@ -1,3 +1,4 @@
+
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -13,7 +14,7 @@ import { finalize } from 'rxjs';
   templateUrl: './truck-detail.component.html',
   styleUrls: ['./truck-detail.component.css']
 })
-export class TruckDetailComponent implements OnInit {  
+export class TruckDetailComponent implements OnInit {
   deleting = false;
   truckId: number | null = null;
   truck: Truck | null = null;
@@ -24,7 +25,9 @@ export class TruckDetailComponent implements OnInit {
   isEditMode = false;
   statusOptions = TRUCK_STATUS_LABELS;
   statusList: [TruckStatus, string][] = [];
-  
+  showStatusDropdown = false;
+  showDeleteDialog = false;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -32,26 +35,33 @@ export class TruckDetailComponent implements OnInit {
     private trucksService: TrucksService
   ) {
     this.truckForm = this.fb.group({
-      matricule: ['', [Validators.required]],
+      matricule: ['', [
+        Validators.required,
+        Validators.minLength(3),
+        Validators.maxLength(20),
+        Validators.pattern(/^[a-zA-Z0-9-]+$/)
+      ]],
       statut: ['disponible', [Validators.required]],
-      client_par_defaut: [null],
+      client_par_defaut: [null, [
+        Validators.maxLength(100),
+        Validators.pattern(/^[a-zA-Z\s'-]*$/)
+      ]],
       articles: [[]]
     });
   }
-  
+
   ngOnInit(): void {
     this.isEditMode = this.router.url.includes('/edit');
     const id = this.route.snapshot.paramMap.get('id');
-    
-    // Initialize statusList once to avoid getter calls during change detection
+
     this.statusList = Object.entries(this.statusOptions) as [TruckStatus, string][];
-    
+
     if (id) {
       this.truckId = +id;
       this.loadTruck(this.truckId);
     }
   }
-  
+
   loadTruck(id: number): void {
     this.loading = true;
     this.trucksService.getTruck(id).subscribe({
@@ -67,7 +77,7 @@ export class TruckDetailComponent implements OnInit {
       }
     });
   }
-  
+
   populateForm(truck: Truck): void {
     this.truckForm.patchValue({
       matricule: truck.matricule,
@@ -75,29 +85,29 @@ export class TruckDetailComponent implements OnInit {
       client_par_defaut: truck.client_par_defaut,
       articles: truck.articles
     });
-    
+
     if (!this.isEditMode) {
       this.truckForm.disable();
     }
   }
-  
+
   onSubmit(): void {
     if (this.truckForm.invalid || !this.truckId || !this.truck) {
+      this.truckForm.markAllAsTouched();
       return;
     }
-    
+
     this.saving = true;
     this.error = '';
-    
-    // Create a clean payload with only the fields we need to update
+
     const formValue = this.truckForm.value;
     const payload = {
       matricule: formValue.matricule,
       statut: formValue.statut,
-      client_par_defaut: formValue.client_par_defaut,
+      client_par_defaut: formValue.client_par_defaut || null,
       articles: Array.isArray(formValue.articles) ? formValue.articles : []
     };
-    
+
     this.trucksService.updateTruck(this.truckId, payload).subscribe({
       next: () => {
         this.saving = false;
@@ -110,22 +120,31 @@ export class TruckDetailComponent implements OnInit {
       }
     });
   }
-  
+
   toggleEditMode(): void {
     this.isEditMode = !this.isEditMode;
     if (this.isEditMode) {
       this.truckForm.enable();
     } else {
       this.truckForm.disable();
+      if (this.truck) {
+        this.populateForm(this.truck);
+      }
     }
+    this.showStatusDropdown = false;
   }
-  
+
+  toggleStatusDropdown(): void {
+    this.showStatusDropdown = !this.showStatusDropdown;
+  }
+
   changeStatus(status: TruckStatus): void {
     if (!this.truckId) return;
-    
+
     this.saving = true;
     this.error = '';
-    
+    this.showStatusDropdown = false;
+
     this.trucksService.changeStatus(this.truckId, status)
       .pipe(finalize(() => this.saving = false))
       .subscribe({
@@ -139,25 +158,33 @@ export class TruckDetailComponent implements OnInit {
         }
       });
   }
-  
-  deleteTruck(): void {
-    if (!this.truckId || !confirm('Êtes-vous sûr de vouloir supprimer ce camion ?')) return;
-    
+
+  openDeleteDialog(): void {
+    this.showDeleteDialog = true;
+  }
+
+  closeDeleteDialog(): void {
+    this.showDeleteDialog = false;
+  }
+
+  confirmDelete(): void {
+    if (!this.truckId) return;
+
     this.deleting = true;
     this.error = '';
-    
+
     this.trucksService.deleteTruck(this.truckId)
       .pipe(finalize(() => this.deleting = false))
       .subscribe({
         next: () => {
+          this.closeDeleteDialog();
           this.router.navigate(['/trucks']);
         },
         error: (err) => {
           this.error = err.message || 'Échec de la suppression du camion';
+          this.closeDeleteDialog();
           console.error(err);
         }
       });
   }
-  
-  // Removed getter in favor of property initialized in ngOnInit
 }

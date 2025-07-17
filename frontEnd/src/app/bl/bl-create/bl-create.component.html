@@ -1,71 +1,138 @@
-<div class="container">
-  <div *ngIf="error" class="alert alert-danger mb-3">
-    <p>Impossible de créer le bon de livraison.</p>
-    <p>Veuillez vérifier que vous êtes connecté et que vous disposez des autorisations nécessaires.</p>
+<div class="bl-create-container">
+  <div class="header-section">
+    <h2 class="page-title">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/>
+        <path d="M18 9l-6 6M12 9l6 6"/>
+      </svg>
+      Créer un Bon de Livraison
+    </h2>
+    <a routerLink="/bl" class="back-button">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+      </svg>
+    </a>
   </div>
 
-  <h2>Créer un Bon de Livraison</h2>
-  
-  <form [formGroup]="blForm" (ngSubmit)="onSubmit()">
+  <div *ngIf="error" class="alert">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"/>
+      <path d="M12 8v4M12 16h.01"/>
+    </svg>
+    <span>{{ error }}</span>
+  </div>
+
+  <form [formGroup]="blForm" (ngSubmit)="onSubmit()" class="form-content">
     <div class="form-group">
-      <label for="id_bl">Numéro BL</label>
-      <input type="text" class="form-control" id="id_bl" formControlName="id_bl">
-      <div *ngIf="blForm.get('id_bl')?.invalid && blForm.get('id_bl')?.touched" class="text-danger">
-        Numéro BL est requis
+      <label for="id_bl" class="form-label">Numéro BL</label>
+      <input
+        id="id_bl"
+        name="id_bl"
+        formControlName="id_bl"
+        type="text"
+        placeholder="Ex: BL-001"
+        class="form-input"
+        [ngClass]="{'form-input-error': blForm.get('id_bl')?.touched && blForm.get('id_bl')?.errors}"
+      >
+      <div *ngIf="blForm.get('id_bl')?.touched && blForm.get('id_bl')?.errors" class="error-message">
+        <span *ngIf="blForm.get('id_bl')?.errors?.['required']">Numéro BL est requis</span>
+        <span *ngIf="blForm.get('id_bl')?.errors?.['maxlength']">Numéro BL ne peut pas dépasser 50 caractères</span>
       </div>
     </div>
-    
+
     <div class="form-group">
-      <label for="article">Article</label>
-      <select class="form-control" id="article" formControlName="article">
-        <option value="">Sélectionner un article</option>
-        <option *ngFor="let article of articles" [value]="article.id">{{article.nom}}</option>
+      <label for="article" class="form-label">Article</label>
+      <select
+        id="article"
+        name="article"
+        formControlName="article"
+        class="form-input"
+        [ngClass]="{'form-input-error': blForm.get('article')?.touched && blForm.get('article')?.errors}"
+      >
+        <option value="" disabled>Sélectionner un article</option>
+        <option *ngFor="let article of articles" [ngValue]="article">{{ article.nom }}</option>
       </select>
-      <div *ngIf="blForm.get('article')?.invalid && blForm.get('article')?.touched" class="text-danger">
-        Article est requis
+      <div *ngIf="blForm.get('article')?.touched && blForm.get('article')?.errors" class="error-message">
+        <span *ngIf="blForm.get('article')?.errors?.['required']">Article est requis</span>
       </div>
     </div>
-    
+
     <div class="form-group">
-      <label for="client">Client</label>
-      <select class="form-control" id="client" formControlName="client">
-        <option value="">Sélectionner un client</option>
-        <option *ngFor="let client of clients" [value]="client.id">{{client.nom}}</option>
+      <label for="client" class="form-label">Client</label>
+      <select
+        id="client"
+        name="client"
+        formControlName="client"
+        class="form-input"
+        [ngClass]="{'form-input-error': blForm.get('client')?.touched && blForm.get('client')?.errors}"
+      >
+        <option value="" disabled>Sélectionner un client</option>
+        <option *ngFor="let client of clients" [ngValue]="client">{{ client.nom }}</option>
       </select>
-      <div *ngIf="blForm.get('client')?.invalid && blForm.get('client')?.touched" class="text-danger">
-        Client est requis
+      <div *ngIf="blForm.get('client')?.touched && blForm.get('client')?.errors" class="error-message">
+        <span *ngIf="blForm.get('client')?.errors?.['required']">Client est requis</span>
       </div>
     </div>
-    
+
     <div class="form-group">
-      <label for="camion">Camion</label>
-      <select class="form-control" id="camion" formControlName="camion">
-        <option value="">Sélectionner un camion (optionnel)</option>
-        <option *ngFor="let camion of camions" [value]="camion.id">{{camion.matricule}}</option>
+      <label for="camion" class="form-label">Camion (optionnel)</label>
+      <select
+        id="camion"
+        name="camion"
+        formControlName="camion"
+        class="form-input"
+      >
+        <option value="" disabled>Sélectionner un camion</option>
+        <option *ngFor="let camion of camions" [ngValue]="camion">{{ camion.matricule }}</option>
       </select>
     </div>
-    
+
     <div class="form-group">
-      <label for="quantite">Quantité</label>
-      <input type="number" class="form-control" id="quantite" formControlName="quantite" min="0" step="0.01">
-      <div *ngIf="blForm.get('quantite')?.invalid && blForm.get('quantite')?.touched" class="text-danger">
-        Quantité valide est requise
+      <label for="quantite" class="form-label">Quantité</label>
+      <input
+        id="quantite"
+        name="quantite"
+        formControlName="quantite"
+        type="number"
+        placeholder="Ex: 10"
+        class="form-input"
+        [ngClass]="{'form-input-error': blForm.get('quantite')?.touched && blForm.get('quantite')?.errors}"
+      >
+      <div *ngIf="blForm.get('quantite')?.touched && blForm.get('quantite')?.errors" class="error-message">
+        <span *ngIf="blForm.get('quantite')?.errors?.['required']">Quantité est requise</span>
+        <span *ngIf="blForm.get('quantite')?.errors?.['min']">Quantité doit être supérieure ou égale à 0</span>
       </div>
     </div>
-    
+
     <div class="form-group">
-      <label for="statut">Statut</label>
-      <select class="form-control" id="statut" formControlName="statut">
+      <label for="statut" class="form-label">Statut</label>
+      <select
+        id="statut"
+        name="statut"
+        formControlName="statut"
+        class="form-input"
+        [ngClass]="{'form-input-error': blForm.get('statut')?.touched && blForm.get('statut')?.errors}"
+      >
         <option value="en_attente">En Attente</option>
         <option value="en_cours">En Cours</option>
         <option value="termine">Terminé</option>
         <option value="annule">Annulé</option>
       </select>
+      <div *ngIf="blForm.get('statut')?.touched && blForm.get('statut')?.errors" class="error-message">
+        <span *ngIf="blForm.get('statut')?.errors?.['required']">Statut est requis</span>
+      </div>
     </div>
-    
-    <div class="mt-3">
-      <button type="submit" class="btn btn-primary" [disabled]="blForm.invalid">Enregistrer</button>
-      <button type="button" class="btn btn-secondary ml-2" routerLink="/bl">Annuler</button>
+
+    <div class="form-actions">
+      <button type="submit" class="submit-button" [disabled]="saving">
+        <svg *ngIf="saving" class="spinner" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12a8 8 0 018-8v2a6 6 0 00-6 6h2z"></path>
+        </svg>
+        <span>{{ saving ? 'Enregistrement...' : 'Enregistrer' }}</span>
+      </button>
+      <button type="button" class="cancel-button" (click)="router.navigate(['/bl'])" [disabled]="saving">
+        Annuler
+      </button>
     </div>
   </form>
 </div>

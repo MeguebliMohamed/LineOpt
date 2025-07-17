@@ -1,4 +1,3 @@
-
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -28,6 +27,9 @@ export class TrucksListComponent implements OnInit {
   itemsPerPage: number = 10;
   pageIndex: number = 0;
   filtersVisible: boolean = true;
+  showDeleteDialog: boolean = false;
+  deleteTruckId: number | null = null;
+  deleteTruckMatricule: string = '';
 
   statusOptions: { value: TruckStatus; label: string }[] = [
     { value: 'disponible', label: TRUCK_STATUS_LABELS['disponible'] },
@@ -95,18 +97,32 @@ export class TrucksListComponent implements OnInit {
     this.filtersVisible = !this.filtersVisible;
   }
 
-  deleteTruck(id: number): void {
-    if (confirm('Voulez-vous vraiment supprimer ce camion ?')) {
+  openDeleteDialog(id: number, matricule: string): void {
+    this.deleteTruckId = id;
+    this.deleteTruckMatricule = matricule;
+    this.showDeleteDialog = true;
+  }
+
+  closeDeleteDialog(): void {
+    this.showDeleteDialog = false;
+    this.deleteTruckId = null;
+    this.deleteTruckMatricule = '';
+  }
+
+  confirmDelete(): void {
+    if (this.deleteTruckId !== null) {
       this.loading = true;
-      this.trucksService.deleteTruck(id).subscribe({
+      this.trucksService.deleteTruck(this.deleteTruckId).subscribe({
         next: () => {
-          this.trucks = this.trucks.filter(truck => truck.id !== id);
+          this.trucks = this.trucks.filter(truck => truck.id !== this.deleteTruckId);
           this.applyFilters();
           this.loading = false;
+          this.closeDeleteDialog();
         },
         error: (err) => {
           this.error = err.message || 'Échec de la suppression du camion';
           this.loading = false;
+          this.closeDeleteDialog();
           console.error('Error deleting truck:', err);
         }
       });

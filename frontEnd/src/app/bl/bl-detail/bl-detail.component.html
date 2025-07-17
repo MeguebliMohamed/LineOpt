@@ -1,72 +1,190 @@
-<div class="container">
-  <div *ngIf="loading" class="text-center">
-    <p>Chargement...</p>
+<div class="bl-detail-container">
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <span class="loading-text">Chargement...</span>
   </div>
 
-  <div *ngIf="error" class="alert alert-danger">
-    <p>Impossible de charger les détails du bon de livraison.</p>
-    <p>Veuillez vérifier que vous êtes connecté et que vous disposez des autorisations nécessaires.</p>
+  <div *ngIf="error" class="alert">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"/>
+      <path d="M12 8v4M12 16h.01"/>
+    </svg>
+    <span>{{ error }}</span>
   </div>
 
-  <div *ngIf="!loading && !error && bl">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h2>Bon de Livraison: {{bl.id_bl}}</h2>
-      <div>
-        <button class="btn btn-primary mr-2" [routerLink]="['/bl', bl.id_bl, 'edit']">Modifier</button>
-        <button class="btn btn-danger" (click)="onDelete()">Supprimer</button>
+  <div *ngIf="!loading && !error && bl" class="content">
+    <div class="header-section">
+      <h2 class="page-title">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/>
+          <path d="M18 9l-6 6M12 9l6 6"/>
+        </svg>
+        Bon de Livraison: {{ bl.id_bl }}
+      </h2>
+      <div class="actions">
+        <button *ngIf="!isEditing" class="action-button" (click)="toggleEdit()" title="Modifier">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+        </button>
+        <button *ngIf="!isEditing" class="action-button" (click)="onDelete()" title="Supprimer">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+          </svg>
+        </button>
+        <a routerLink="/bl" class="back-button">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+          </svg>
+        </a>
       </div>
     </div>
 
-    <div class="card">
-      <div class="card-body">
-        <div class="row mb-2">
-          <div class="col-md-3 font-weight-bold">Numéro BL:</div>
-          <div class="col-md-9">{{bl.id_bl}}</div>
-        </div>
-        
-        <div class="row mb-2">
-          <div class="col-md-3 font-weight-bold">Article:</div>
-          <div class="col-md-9">{{bl.article.nom}}</div>
-        </div>
-        
-        <div class="row mb-2">
-          <div class="col-md-3 font-weight-bold">Client:</div>
-          <div class="col-md-9">{{bl.client.nom}}</div>
-        </div>
-        
-        <div class="row mb-2">
-          <div class="col-md-3 font-weight-bold">Camion:</div>
-          <div class="col-md-9">{{bl.camion ? bl.camion.matricule : 'Non assigné'}}</div>
-        </div>
-        
-        <div class="row mb-2">
-          <div class="col-md-3 font-weight-bold">Quantité:</div>
-          <div class="col-md-9">{{bl.quantite}}</div>
-        </div>
-        
-        <div class="row mb-2">
-          <div class="col-md-3 font-weight-bold">Statut:</div>
-          <div class="col-md-9">
-            <span [ngClass]="{
-              'badge bg-warning': bl.statut === 'en_attente',
-              'badge bg-primary': bl.statut === 'en_cours',
-              'badge bg-success': bl.statut === 'termine',
-              'badge bg-danger': bl.statut === 'annule'
-            }">
-              {{getStatusLabel(bl.statut)}}
-            </span>
-          </div>
-        </div>
-        
-        <div class="row mb-2">
-          <div class="col-md-3 font-weight-bold">Date:</div>
-          <div class="col-md-9">{{bl.date_bl | date:'dd/MM/yyyy HH:mm'}}</div>
-        </div>
+    <div *ngIf="!isEditing" class="detail-view">
+      <div class="detail-item">
+        <span class="detail-label">Numéro BL:</span>
+        <span class="detail-value">{{ bl.id_bl }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Article:</span>
+        <span class="detail-value">{{ bl.article.nom }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Client:</span>
+        <span class="detail-value">{{ bl.client.nom }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Camion:</span>
+        <span class="detail-value">{{ bl.camion ? bl.camion.matricule : 'Non assigné' }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Quantité:</span>
+        <span class="detail-value">{{ bl.quantite }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Statut:</span>
+        <span class="status" [ngClass]="{
+          'status-warning': bl.statut === 'en_attente',
+          'status-primary': bl.statut === 'en_cours',
+          'status-success': bl.statut === 'termine',
+          'status-danger': bl.statut === 'annule'
+        }">
+          {{ getStatusLabel(bl.statut) }}
+        </span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Date:</span>
+        <span class="detail-value">{{ bl.date_bl | date:'dd/MM/yyyy HH:mm' }}</span>
       </div>
     </div>
 
-    <div class="mt-3">
-      <button class="btn btn-secondary" routerLink="/bl">Retour à la liste</button>
-    </div>
+    <form *ngIf="isEditing" [formGroup]="blForm" (ngSubmit)="onSubmit()" class="form-content">
+      <div class="form-group">
+        <label for="id_bl" class="form-label">Numéro BL</label>
+        <input
+          id="id_bl"
+          name="id_bl"
+          formControlName="id_bl"
+          type="text"
+          class="form-input"
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="article" class="form-label">Article</label>
+        <select
+          id="article"
+          name="article"
+          formControlName="article"
+          class="form-input"
+          [ngClass]="{'form-input-error': blForm.get('article')?.touched && blForm.get('article')?.errors}"
+        >
+          <option value="" disabled>Sélectionner un article</option>
+          <option *ngFor="let article of articles" [ngValue]="article">{{ article.nom }}</option>
+        </select>
+        <div *ngIf="blForm.get('article')?.touched && blForm.get('article')?.errors" class="error-message">
+          <span *ngIf="blForm.get('article')?.errors?.['required']">Article est requis</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="client" class="form-label">Client</label>
+        <select
+          id="client"
+          name="client"
+          formControlName="client"
+          class="form-input"
+          [ngClass]="{'form-input-error': blForm.get('client')?.touched && blForm.get('client')?.errors}"
+        >
+          <option value="" disabled>Sélectionner un client</option>
+          <option *ngFor="let client of clients" [ngValue]="client">{{ client.nom }}</option>
+        </select>
+        <div *ngIf="blForm.get('client')?.touched && blForm.get('client')?.errors" class="error-message">
+          <span *ngIf="blForm.get('client')?.errors?.['required']">Client est requis</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="camion" class="form-label">Camion (optionnel)</label>
+        <select
+          id="camion"
+          name="camion"
+          formControlName="camion"
+          class="form-input"
+        >
+          <option value="" disabled>Sélectionner un camion</option>
+          <option *ngFor="let camion of camions" [ngValue]="camion">{{ camion.matricule }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="quantite" class="form-label">Quantité</label>
+        <input
+          id="quantite"
+          name="quantite"
+          formControlName="quantite"
+          type="number"
+          placeholder="Ex: 10"
+          class="form-input"
+          [ngClass]="{'form-input-error': blForm.get('quantite')?.touched && blForm.get('quantite')?.errors}"
+        >
+        <div *ngIf="blForm.get('quantite')?.touched && blForm.get('quantite')?.errors" class="error-message">
+          <span *ngIf="blForm.get('quantite')?.errors?.['required']">Quantité est requise</span>
+          <span *ngIf="blForm.get('quantite')?.errors?.['min']">Quantité doit être supérieure ou égale à 0</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="statut" class="form-label">Statut</label>
+        <select
+          id="statut"
+          name="statut"
+          formControlName="statut"
+          class="form-input"
+          [ngClass]="{'form-input-error': blForm.get('statut')?.touched && blForm.get('statut')?.errors}"
+        >
+          <option value="en_attente">En Attente</option>
+          <option value="en_cours">En Cours</option>
+          <option value="termine">Terminé</option>
+          <option value="annule">Annulé</option>
+        </select>
+        <div *ngIf="blForm.get('statut')?.touched && blForm.get('statut')?.errors" class="error-message">
+          <span *ngIf="blForm.get('statut')?.errors?.['required']">Statut est requis</span>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="submit-button" [disabled]="blForm.invalid">
+          <svg *ngIf="blForm.disabled" class="spinner" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12a8 8 0 018-8v2a6 6 0 00-6 6h2z"></path>
+          </svg>
+          <span>Enregistrer</span>
+        </button>
+        <button type="button" class="cancel-button" (click)="toggleEdit()">
+          Annuler
+        </button>
+      </div>
+    </form>
   </div>
 </div>

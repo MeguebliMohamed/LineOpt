@@ -1,4 +1,3 @@
-
 import { Routes } from '@angular/router';
 import { AuthGuard } from './auth/auth.guard';
 
@@ -6,6 +5,14 @@ export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: 'login', loadComponent: () => import('./auth/login.component').then(m => m.LoginComponent) },
   { path: 'register', loadComponent: () => import('./auth/register.component').then(m => m.RegisterComponent) },
+  {
+    path: 'not-authorized',
+    loadComponent: () => import('./not-authorized/not-authorized').then(m => m.NotAuthorizedComponent)
+  },
+  {
+    path: 'not-found',
+    loadComponent: () => import('./not-found/not-found').then(m => m.NotFoundComponent)
+  },
   {
     path: 'dashboard',
     canActivate: [AuthGuard],
@@ -41,5 +48,5 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
     loadChildren: () => import('./articles/articles.routes').then(m => m.articlesRoutes)
   },
-  { path: '**', redirectTo: 'login' }
+  { path: '**', redirectTo: 'not-found' }
 ];

@@ -1,37 +1,83 @@
 <div class="users-list-container">
-  <h2>Users Management</h2>
-  <div class="action-buttons">
-    <button routerLink="/users/create" class="create-user-btn">Create New User</button>
-    <button routerLink="/users/groups" class="groups-btn">Manage Groups</button>
+  <div class="header-section">
+    <h2 class="page-title">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
+      Gestion des Utilisateurs
+    </h2>
+    <div class="button-group">
+      <a routerLink="/users/create" class="add-button">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 5v14M5 12h14"/>
+        </svg>
+        Créer un Nouvel Utilisateur
+      </a>
+      <a routerLink="/groups" class="add-button">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        Gérer les Groupes
+      </a>
+    </div>
   </div>
-  
-  <div *ngIf="loading" class="loading">Loading...</div>
-  
-  <div *ngIf="!loading" class="users-table">
-    <table>
+
+  <div *ngIf="error" class="alert">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"/>
+      <path d="M12 8v4M12 16h.01"/>
+    </svg>
+    <span>{{ error }}</span>
+  </div>
+
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <span class="loading-text">Chargement...</span>
+  </div>
+
+  <div *ngIf="!loading && !error && users.length === 0" class="no-data">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"/>
+      <path d="M12 8v4M12 16h.01"/>
+    </svg>
+    <p>Aucun utilisateur trouvé.</p>
+  </div>
+
+  <div *ngIf="!loading && !error && users.length > 0" class="table-container">
+    <table class="users-table">
       <thead>
-        <tr>
-          <th>Username</th>
-          <th>Full Name</th>
-          <th>Email</th>
-          <th>Groups</th>
-          <th>Actions</th>
-        </tr>
+      <tr>
+        <th>Nom d'utilisateur</th>
+        <th>Nom complet</th>
+        <th>Email</th>
+        <th>Groupes</th>
+        <th>Actions</th>
+      </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let user of users">
-          <td>{{ user.username }}</td>
-          <td>{{ user.full_name }}</td>
-          <td>{{ user.email }}</td>
-          <td>
-            <span *ngFor="let group of user.groups; let last = last">
-              {{ group.name }}<span *ngIf="!last">, </span>
+      <tr *ngFor="let user of users">
+        <td>{{ user.username }}</td>
+        <td>{{ user.full_name }}</td>
+        <td>{{ user.email }}</td>
+        <td>
+            <span *ngFor="let group of user.groups; let isLast = last">
+              {{ group.name }}{{ isLast ? '' : ', ' }}
             </span>
-          </td>
-          <td>
-            <button (click)="deleteUser(user.id)" class="delete-btn">Delete</button>
-          </td>
-        </tr>
+        </td>
+        <td class="actions">
+          <button class="action-button" (click)="deleteUser(user.id)" title="Supprimer">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+            </svg>
+          </button>
+        </td>
+      </tr>
       </tbody>
     </table>
   </div>

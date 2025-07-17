@@ -1,48 +1,151 @@
-<div class="container mt-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Articles</h2>
-    <button class="btn btn-primary" routerLink="/articles/create">Ajouter un article</button>
+
+<div class="articles-list-container">
+  <div class="header-section">
+    <h2 class="page-title">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/>
+        <path d="M18 9l-6 6M12 9l6 6"/>
+      </svg>
+      Gestion des Articles
+    </h2>
   </div>
-  
-  <div *ngIf="loading" class="text-center">
-    <div class="spinner-border" role="status">
-      <span class="visually-hidden">Chargement...</span>
+
+  <div class="filters-bar" [ngClass]="{'collapsed': !filtersVisible}">
+    <button class="filter-toggle" (click)="toggleFilters()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M4 4h16v2.586l-6.293 6.293a1 1 0 0 0-.293.707v4.586l-4 2V15.586a1 1 0 0 0-.293-.707L4 6.586V4z"/>
+      </svg>
+      <span class="filter-toggle-text">{{ filtersVisible ? 'Masquer' : 'Filtres' }}</span>
+    </button>
+
+    <div class="filters-content">
+      <div class="filter-group">
+        <label for="name-filter">Nom de l'article</label>
+        <div class="input-wrapper">
+          <input id="name-filter" type="text" [(ngModel)]="nameFilter" (input)="applyFilters()" placeholder="Rechercher un article...">
+          <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="M21 21l-4.35-4.35"/>
+          </svg>
+        </div>
+      </div>
+      <br>
+
+      <div class="button-group">
+        <button class="add-button" [routerLink]="['/articles/create']">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          Ajouter un article
+        </button>
+        <button class="clear-button" (click)="clearFilters()" [disabled]="!nameFilter">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+          Effacer
+        </button>
+      </div>
     </div>
   </div>
-  
-  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
-  
-  <div *ngIf="!loading && articles.length === 0" class="alert alert-info">
-    Aucun article trouvé.
+
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <span class="loading-text">Chargement...</span>
   </div>
-  
-  <div class="table-responsive" *ngIf="!loading && articles.length > 0">
-    <table class="table table-striped table-hover">
+
+  <div *ngIf="error" class="alert">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"/>
+      <path d="M12 8v4M12 16h.01"/>
+    </svg>
+    <span>{{ error }}</span>
+  </div>
+
+  <div *ngIf="!loading && filteredArticles.length === 0" class="no-data">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"/>
+      <path d="M12 8v4M12 16h.01"/>
+    </svg>
+    <p>Aucun article trouvé.</p>
+  </div>
+
+  <div *ngIf="!loading && filteredArticles.length > 0" class="table-container">
+    <table class="articles-table">
       <thead>
-        <tr>
-          <th>ID</th>
-          <th>Nom</th>
-          <th>Type</th>
-          <th>Actions</th>
-        </tr>
+      <tr>
+        <th>ID</th>
+        <th>Nom</th>
+        <th>Type</th>
+        <th>Actions</th>
+      </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let article of articles">
-          <td>{{ article.id }}</td>
-          <td>{{ article.name }}</td>
-          <td>{{ article.type }}</td>
-          <td>
-            <div class="btn-group">
-              <button class="btn btn-sm btn-outline-primary" [routerLink]="['/articles', article.id]">
-                Détails
-              </button>
-              <button class="btn btn-sm btn-outline-secondary" [routerLink]="['/articles', article.id, 'edit']">
-                Modifier
-              </button>
-            </div>
-          </td>
-        </tr>
+      <tr *ngFor="let article of paginatedArticles">
+        <td>{{ article.id }}</td>
+        <td>{{ article.name }}</td>
+        <td>{{ article.type || 'Non spécifié' }}</td>
+        <td class="actions">
+          <button class="action-button" [routerLink]="['/articles', article.id]" title="Détails">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+          <button class="action-button" [routerLink]="['/articles', article.id, 'edit']" title="Modifier">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+          </button>
+          <button class="action-button delete" (click)="openDeleteDialog(Number(article.id), article.name)" title="Supprimer">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 6h18M6 6V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2m-12 0v14a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V6m-9 4v10m4-10v10"/>
+            </svg>
+          </button>
+        </td>
+      </tr>
       </tbody>
     </table>
+  </div>
+
+  <div *ngIf="!loading && filteredArticles.length > 0" class="paginator">
+    <div class="paginator-controls">
+      <button (click)="previousPage()" [disabled]="pageIndex === 0">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M15 18l-6-6 6-6"/>
+        </svg>
+      </button>
+      <span>Page {{ pageIndex + 1 }} sur {{ pageCount }}</span>
+      <button (click)="nextPage()" [disabled]="!hasNextPage()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 18l6-6-6-6"/>
+        </svg>
+      </button>
+      <select [(ngModel)]="itemsPerPage" (ngModelChange)="onPageSizeChange()">
+        <option *ngFor="let size of [5, 10, 25, 50]" [value]="size">{{ size }}</option>
+      </select>
+    </div>
+  </div>
+
+  <div *ngIf="showDeleteDialog" class="dialog-overlay">
+    <div class="dialog">
+      <div class="dialog-header">
+        <h3>Confirmer la suppression</h3>
+        <button class="close-button" (click)="closeDeleteDialog()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div class="dialog-content">
+        <p>Voulez-vous vraiment supprimer l'article <strong>{{ deleteArticleName }}</strong> ? Cette action est irréversible.</p>
+      </div>
+      <div class="dialog-actions">
+        <button class="dialog-button cancel" (click)="closeDeleteDialog()">Annuler</button>
+        <button class="dialog-button confirm" (click)="confirmDelete()" [disabled]="deleting">
+          {{ deleting ? 'Suppression...' : 'Confirmer' }}
+        </button>
+      </div>
+    </div>
   </div>
 </div>
