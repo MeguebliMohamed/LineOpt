@@ -1,0 +1,38 @@
+<div class="users-list-container">
+  <h2>Users Management</h2>
+  <div class="action-buttons">
+    <button routerLink="/users/create" class="create-user-btn">Create New User</button>
+    <button routerLink="/users/groups" class="groups-btn">Manage Groups</button>
+  </div>
+  
+  <div *ngIf="loading" class="loading">Loading...</div>
+  
+  <div *ngIf="!loading" class="users-table">
+    <table>
+      <thead>
+        <tr>
+          <th>Username</th>
+          <th>Full Name</th>
+          <th>Email</th>
+          <th>Groups</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of users">
+          <td>{{ user.username }}</td>
+          <td>{{ user.full_name }}</td>
+          <td>{{ user.email }}</td>
+          <td>
+            <span *ngFor="let group of user.groups; let last = last">
+              {{ group.name }}<span *ngIf="!last">, </span>
+            </span>
+          </td>
+          <td>
+            <button (click)="deleteUser(user.id)" class="delete-btn">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

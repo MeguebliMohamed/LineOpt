@@ -1,0 +1,30 @@
+.dashboard-container {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 24px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+}
+.dashboard-container h2 {
+  margin-bottom: 18px;
+}
+.dashboard-container nav {
+  display: flex;
+  gap: 18px;
+  margin-bottom: 24px;
+}
+.dashboard-container nav a {
+  color: #1976d2;
+  text-decoration: none;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+.dashboard-container nav a:hover {
+  background: #e3f2fd;
+}
+.dashboard-content {
+  margin-top: 20px;
+}

@@ -1,0 +1,94 @@
+<div class="truck-detail-container">
+  <div class="header">
+    <h2>{{ isEditMode ? 'Modifier' : 'Détails' }} Camion</h2>
+    
+    <div class="actions">
+      <div *ngIf="!isEditMode && truck" class="d-flex align-items-center me-2">
+        <div class="dropdown">
+          <button class="btn btn-outline-primary dropdown-toggle" type="button" id="statusDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            Changer statut
+          </button>
+          <ul class="dropdown-menu" aria-labelledby="statusDropdown">
+            <li *ngFor="let status of statusList">
+              <a class="dropdown-item" href="javascript:void(0)" 
+                 [class.active]="truck && truck.statut === status[0]"
+                 (click)="changeStatus(status[0])">
+                {{ status[1] }}
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <button *ngIf="!isEditMode" (click)="toggleEditMode()" class="btn btn-primary">
+        <i class="bi bi-pencil"></i> Modifier
+      </button>
+      <button *ngIf="!isEditMode && truck" (click)="deleteTruck()" class="btn btn-danger" [disabled]="deleting">
+        <i class="bi bi-trash"></i> {{ deleting ? 'Suppression...' : 'Supprimer' }}
+      </button>
+      <button [routerLink]="['/trucks']" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Retour
+      </button>
+    </div>
+  </div>
+  
+  <div *ngIf="loading" class="loading-spinner">
+    <span>Chargement...</span>
+  </div>
+  
+  <div *ngIf="error" class="alert alert-danger">
+    {{ error }}
+  </div>
+  
+  <form *ngIf="!loading && truck" [formGroup]="truckForm" (ngSubmit)="onSubmit()">
+    <div class="mb-3">
+      <label for="matricule" class="form-label">Matricule</label>
+      <input type="text" class="form-control" id="matricule" formControlName="matricule">
+      <div *ngIf="truckForm.get('matricule')?.invalid && truckForm.get('matricule')?.touched" class="text-danger">
+        Matricule est obligatoire
+      </div>
+    </div>
+    
+    <div class="mb-3">
+      <label for="statut" class="form-label">Statut</label>
+      <div class="d-flex align-items-center">
+        <select class="form-select" id="statut" formControlName="statut">
+          <option *ngFor="let status of statusList" [value]="status[0]">{{ status[1] }}</option>
+        </select>
+        <button *ngIf="!isEditMode" type="button" class="btn btn-primary ms-2" 
+                [disabled]="saving" 
+                (click)="changeStatus(truckForm.get('statut')?.value)">
+          <span *ngIf="!saving">Changer statut</span>
+          <span *ngIf="saving">Mise à jour...</span>
+        </button>
+      </div>
+    </div>
+    
+    <div class="mb-3">
+      <label for="client_par_defaut" class="form-label">Client par défaut</label>
+      <input type="number" class="form-control" id="client_par_defaut" formControlName="client_par_defaut">
+      <small class="form-text text-muted">Laissez vide si aucun client par défaut</small>
+    </div>
+    
+    <div class="mb-3">
+      <label class="form-label">Articles</label>
+      <div *ngIf="truck && truck.articles.length === 0" class="text-muted">
+        Aucun article associé
+      </div>
+      <ul *ngIf="truck && truck.articles.length > 0" class="list-group">
+        <li *ngFor="let articleId of truck.articles" class="list-group-item">
+          Article ID: {{ articleId }}
+        </li>
+      </ul>
+    </div>
+    
+    <div *ngIf="isEditMode" class="form-actions">
+      <button type="submit" [disabled]="truckForm.invalid || saving" class="btn btn-primary">
+        <span *ngIf="saving">Enregistrement...</span>
+        <span *ngIf="!saving">Enregistrer</span>
+      </button>
+      <button type="button" (click)="toggleEditMode()" class="btn btn-outline-secondary">
+        Annuler
+      </button>
+    </div>
+  </form>
+</div>

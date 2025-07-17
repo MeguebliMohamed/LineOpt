@@ -1,0 +1,15 @@
+<nav class="navbar">
+  <a routerLink="/dashboard">Dashboard</a>
+  <a routerLink="/trucks">Trucks</a>
+  <a routerLink="/queue">Queue</a>
+  <a routerLink="/bl">Delivery Notes</a>
+  <a routerLink="/incidents">Incidents</a>
+  <a routerLink="/articles">Articles</a>
+  <a *ngIf="auth.isSuperAdmin()" routerLink="/users">Users</a>
+  <span class="spacer"></span>
+  <div *ngIf="auth.isLoggedIn() | async" class="user-info">
+    <span>{{ auth.getUsername() }} ({{ auth.getUserGroup() }})</span>
+    <button (click)="logout()">Logout</button>
+  </div>
+  <a *ngIf="!(auth.isLoggedIn() | async)" routerLink="/login">Login</a>
+</nav>

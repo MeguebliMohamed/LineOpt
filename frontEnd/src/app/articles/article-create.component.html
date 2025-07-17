@@ -1,0 +1,43 @@
+<div class="container mt-4">
+  <h2>Créer un nouvel article</h2>
+  
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+  
+  <form [formGroup]="articleForm" (ngSubmit)="onSubmit()">
+    <div class="mb-3">
+      <label for="name" class="form-label">Nom</label>
+      <input 
+        type="text" 
+        class="form-control" 
+        id="name" 
+        formControlName="name"
+        [ngClass]="{'is-invalid': submitted && f['name'].errors}"
+      >
+      <div *ngIf="submitted && f['name'].errors" class="invalid-feedback">
+        <div *ngIf="f['name'].errors?.['required']">Le nom est requis</div>
+      </div>
+    </div>
+    
+    <div class="mb-3">
+      <label for="type" class="form-label">Type</label>
+      <input 
+        type="text" 
+        class="form-control" 
+        id="type" 
+        formControlName="type"
+        [ngClass]="{'is-invalid': submitted && f['type'].errors}"
+      >
+      <div *ngIf="submitted && f['type'].errors" class="invalid-feedback">
+        <div *ngIf="f['type'].errors?.['required']">Le type est requis</div>
+      </div>
+    </div>
+    
+    <div class="d-flex gap-2">
+      <button type="submit" class="btn btn-primary" [disabled]="saving">
+        <span *ngIf="saving" class="spinner-border spinner-border-sm me-1"></span>
+        Enregistrer
+      </button>
+      <button type="button" class="btn btn-secondary" routerLink="/articles">Annuler</button>
+    </div>
+  </form>
+</div>

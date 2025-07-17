@@ -1,0 +1,47 @@
+<div class="truck-form-container">
+  <div class="header">
+    <h2>Nouveau Camion</h2>
+    <button [routerLink]="['/trucks']" class="btn btn-secondary">
+      <i class="bi bi-arrow-left"></i> Retour
+    </button>
+  </div>
+  
+  <div *ngIf="error" class="alert alert-danger">
+    {{ error }}
+  </div>
+  
+  <form [formGroup]="truckForm" (ngSubmit)="onSubmit()">
+    <div class="mb-3">
+      <label for="matricule" class="form-label">Matricule</label>
+      <input type="text" class="form-control" id="matricule" formControlName="matricule">
+      <div *ngIf="truckForm.get('matricule')?.invalid && truckForm.get('matricule')?.touched" class="text-danger">
+        Matricule est obligatoire
+      </div>
+    </div>
+    
+    <div class="mb-3">
+      <label for="statut" class="form-label">Statut</label>
+      <select class="form-select" id="statut" formControlName="statut">
+        <option *ngFor="let status of statusList" [value]="status[0]">{{ status[1] }}</option>
+      </select>
+    </div>
+    
+    <div class="mb-3">
+      <label for="client_par_defaut" class="form-label">Client par défaut</label>
+      <input type="number" class="form-control" id="client_par_defaut" formControlName="client_par_defaut">
+      <small class="form-text text-muted">Laissez vide si aucun client par défaut</small>
+    </div>
+    
+    <!-- Articles will be managed after creation -->
+    
+    <div class="form-actions">
+      <button type="submit" [disabled]="truckForm.invalid || saving" class="btn btn-primary">
+        <span *ngIf="saving">Enregistrement...</span>
+        <span *ngIf="!saving">Enregistrer</span>
+      </button>
+      <button type="button" [routerLink]="['/trucks']" class="btn btn-outline-secondary">
+        Annuler
+      </button>
+    </div>
+  </form>
+</div>

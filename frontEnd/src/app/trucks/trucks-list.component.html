@@ -1,0 +1,55 @@
+<div class="trucks-list-container">
+  <h2>Camions</h2>
+  
+  <div class="actions-bar">
+    <button [routerLink]="['create']" class="btn btn-primary">
+      <i class="bi bi-plus-circle"></i> Ajouter un camion
+    </button>
+  </div>
+  
+  <div *ngIf="loading" class="loading-spinner">
+    <span>Chargement...</span>
+  </div>
+  
+  <div *ngIf="error" class="alert alert-danger">
+    {{ error }}
+  </div>
+  
+  <div *ngIf="!loading && trucks.length === 0" class="no-data">
+    <p>Aucun camion trouvé.</p>
+  </div>
+  
+  <table *ngIf="!loading && trucks.length > 0" class="table table-striped">
+    <thead>
+      <tr>
+        <th>Matricule</th>
+        <th>Statut</th>
+        <th>Client par défaut</th>
+        <th>Articles</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let truck of trucks">
+        <td>{{ truck.matricule }}</td>
+        <td>
+          <span [ngClass]="'status-badge status-' + truck.statut">
+            {{ statusLabels[truck.statut] }}
+          </span>
+        </td>
+        <td>{{ truck.client_par_defaut || 'Non assigné' }}</td>
+        <td>{{ truck.articles.length }} article(s)</td>
+        <td>
+          <div class="btn-group">
+            <button [routerLink]="[truck.id]" class="btn btn-sm btn-info" title="Voir détails">
+              <i class="bi bi-eye"></i>
+            </button>
+            <button [routerLink]="[truck.id, 'edit']" class="btn btn-sm btn-primary" title="Modifier">
+              <i class="bi bi-pencil"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

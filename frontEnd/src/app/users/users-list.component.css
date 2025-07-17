@@ -1,0 +1,24 @@
+.users-list-container {
+  max-width: 700px;
+  margin: 40px auto;
+  padding: 24px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+}
+.users-list-container h2 {
+  margin-bottom: 18px;
+}
+.create-user-btn {
+  background: #1976d2;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-bottom: 18px;
+}
+.create-user-btn:hover {
+  background: #1565c0;
+}

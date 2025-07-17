@@ -1,0 +1,38 @@
+<div class="user-create-container">
+  <h2>Create New User</h2>
+  <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+    <div>
+      <label for="username">Username</label>
+      <input id="username" formControlName="username" type="text" />
+    </div>
+    <div>
+      <label for="password">Password</label>
+      <input id="password" formControlName="password" type="password" />
+    </div>
+    <div>
+      <label for="full_name">Full Name</label>
+      <input id="full_name" formControlName="full_name" type="text" />
+    </div>
+    <div>
+      <label for="email">Email</label>
+      <input id="email" formControlName="email" type="email" />
+    </div>
+    <div>
+      <label>Groups</label>
+      <div *ngFor="let group of groups">
+        <label>
+          <input 
+            type="checkbox" 
+            [value]="group.id" 
+            (change)="onGroupChange($event, group.id)"
+          />
+          {{ group.name }}
+        </label>
+      </div>
+    </div>
+    <div *ngIf="error" class="error">{{ error }}</div>
+    <div *ngIf="success" class="success">{{ success }}</div>
+    <button type="submit" [disabled]="userForm.invalid">Create User</button>
+    <button type="button" routerLink="/users">Cancel</button>
+  </form>
+</div>

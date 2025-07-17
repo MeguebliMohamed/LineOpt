@@ -1,0 +1,65 @@
+<div class="container mt-4">
+  <div *ngIf="loading" class="text-center">
+    <div class="spinner-border" role="status">
+      <span class="visually-hidden">Chargement...</span>
+    </div>
+  </div>
+  
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+  
+  <div *ngIf="!loading && article">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2>{{ isEditMode ? 'Modifier l\'article' : 'Détails de l\'article' }}</h2>
+      <div class="btn-group">
+        <button *ngIf="!isEditMode" class="btn btn-outline-primary" (click)="toggleEditMode()">
+          Modifier
+        </button>
+        <button *ngIf="!isEditMode" class="btn btn-outline-danger" (click)="deleteArticle()">
+          <span *ngIf="deleting" class="spinner-border spinner-border-sm me-1"></span>
+          Supprimer
+        </button>
+        <button *ngIf="!isEditMode" class="btn btn-outline-secondary" routerLink="/articles">
+          Retour
+        </button>
+      </div>
+    </div>
+    
+    <form [formGroup]="articleForm" (ngSubmit)="onSubmit()">
+      <div class="mb-3">
+        <label for="name" class="form-label">Nom</label>
+        <input 
+          type="text" 
+          class="form-control" 
+          id="name" 
+          formControlName="name"
+          [ngClass]="{'is-invalid': submitted && f['name'].errors}"
+        >
+        <div *ngIf="submitted && f['name'].errors" class="invalid-feedback">
+          <div *ngIf="f['name'].errors?.['required']">Le nom est requis</div>
+        </div>
+      </div>
+      
+      <div class="mb-3">
+        <label for="type" class="form-label">Type</label>
+        <input 
+          type="text" 
+          class="form-control" 
+          id="type" 
+          formControlName="type"
+          [ngClass]="{'is-invalid': submitted && f['type'].errors}"
+        >
+        <div *ngIf="submitted && f['type'].errors" class="invalid-feedback">
+          <div *ngIf="f['type'].errors?.['required']">Le type est requis</div>
+        </div>
+      </div>
+      
+      <div *ngIf="isEditMode" class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary" [disabled]="saving">
+          <span *ngIf="saving" class="spinner-border spinner-border-sm me-1"></span>
+          Enregistrer
+        </button>
+        <button type="button" class="btn btn-secondary" (click)="toggleEditMode()">Annuler</button>
+      </div>
+    </form>
+  </div>
+</div>

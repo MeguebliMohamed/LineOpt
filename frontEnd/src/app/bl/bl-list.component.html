@@ -1,0 +1,72 @@
+<div class="container">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Bons de Livraison</h2>
+    <button class="btn btn-primary" routerLink="/bl/create">Nouveau BL</button>
+  </div>
+
+  <div class="mb-3">
+    <div class="btn-group" role="group">
+      <button type="button" class="btn" [class.btn-primary]="statusFilter === null" [class.btn-outline-primary]="statusFilter !== null" (click)="filterByStatus(null)">Tous</button>
+      <button type="button" class="btn" [class.btn-primary]="statusFilter === 'en_attente'" [class.btn-outline-primary]="statusFilter !== 'en_attente'" (click)="filterByStatus('en_attente')">En Attente</button>
+      <button type="button" class="btn" [class.btn-primary]="statusFilter === 'en_cours'" [class.btn-outline-primary]="statusFilter !== 'en_cours'" (click)="filterByStatus('en_cours')">En Cours</button>
+      <button type="button" class="btn" [class.btn-primary]="statusFilter === 'termine'" [class.btn-outline-primary]="statusFilter !== 'termine'" (click)="filterByStatus('termine')">Terminé</button>
+      <button type="button" class="btn" [class.btn-primary]="statusFilter === 'annule'" [class.btn-outline-primary]="statusFilter !== 'annule'" (click)="filterByStatus('annule')">Annulé</button>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="text-center">
+    <p>Chargement...</p>
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger">
+    <p>Impossible de charger les bons de livraison.</p>
+    <p>Veuillez vérifier que vous êtes connecté et que vous disposez des autorisations nécessaires.</p>
+  </div>
+
+  <div *ngIf="!loading && !error">
+    <div *ngIf="bls.length === 0" class="alert alert-info">
+      Aucun bon de livraison trouvé.
+    </div>
+
+    <div *ngIf="bls.length > 0" class="table-responsive">
+      <table class="table table-striped table-hover">
+        <thead>
+          <tr>
+            <th>Numéro BL</th>
+            <th>Article</th>
+            <th>Client</th>
+            <th>Camion</th>
+            <th>Quantité</th>
+            <th>Statut</th>
+            <th>Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let bl of bls">
+            <td>{{ bl.id_bl }}</td>
+            <td>{{ bl.article.nom }}</td>
+            <td>{{ bl.client.nom }}</td>
+            <td>{{ bl.camion ? bl.camion.matricule : 'Non assigné' }}</td>
+            <td>{{ bl.quantite }}</td>
+            <td>
+              <span [ngClass]="{
+                'badge bg-warning': bl.statut === 'en_attente',
+                'badge bg-primary': bl.statut === 'en_cours',
+                'badge bg-success': bl.statut === 'termine',
+                'badge bg-danger': bl.statut === 'annule'
+              }">
+                {{ getStatusLabel(bl.statut) }}
+              </span>
+            </td>
+            <td>{{ bl.date_bl | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td>
+              <button class="btn btn-sm btn-info mr-1" [routerLink]="['/bl', bl.id_bl]">Détails</button>
+              <button class="btn btn-sm btn-primary mr-1" [routerLink]="['/bl', bl.id_bl, 'edit']">Modifier</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

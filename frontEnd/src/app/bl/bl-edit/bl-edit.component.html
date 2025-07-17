@@ -1,0 +1,74 @@
+<div class="container">
+  <div *ngIf="loading" class="text-center">
+    <p>Chargement...</p>
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger">
+    <p>Impossible de charger les détails du bon de livraison.</p>
+    <p>Veuillez vérifier que vous êtes connecté et que vous disposez des autorisations nécessaires.</p>
+  </div>
+
+  <div *ngIf="!loading && !error">
+    <h2>Modifier le Bon de Livraison</h2>
+    
+    <form [formGroup]="blForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="id_bl">Numéro BL</label>
+        <input type="text" class="form-control" id="id_bl" formControlName="id_bl" readonly>
+      </div>
+      
+      <div class="form-group">
+        <label for="article">Article</label>
+        <select class="form-control" id="article" formControlName="article">
+          <option value="">Sélectionner un article</option>
+          <option *ngFor="let article of articles" [value]="article.id">{{article.nom}}</option>
+        </select>
+        <div *ngIf="blForm.get('article')?.invalid && blForm.get('article')?.touched" class="text-danger">
+          Article est requis
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="client">Client</label>
+        <select class="form-control" id="client" formControlName="client">
+          <option value="">Sélectionner un client</option>
+          <option *ngFor="let client of clients" [value]="client.id">{{client.nom}}</option>
+        </select>
+        <div *ngIf="blForm.get('client')?.invalid && blForm.get('client')?.touched" class="text-danger">
+          Client est requis
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="camion">Camion</label>
+        <select class="form-control" id="camion" formControlName="camion">
+          <option value="">Sélectionner un camion (optionnel)</option>
+          <option *ngFor="let camion of camions" [value]="camion.id">{{camion.matricule}}</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label for="quantite">Quantité</label>
+        <input type="number" class="form-control" id="quantite" formControlName="quantite" min="0" step="0.01">
+        <div *ngIf="blForm.get('quantite')?.invalid && blForm.get('quantite')?.touched" class="text-danger">
+          Quantité valide est requise
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="statut">Statut</label>
+        <select class="form-control" id="statut" formControlName="statut">
+          <option value="en_attente">En Attente</option>
+          <option value="en_cours">En Cours</option>
+          <option value="termine">Terminé</option>
+          <option value="annule">Annulé</option>
+        </select>
+      </div>
+      
+      <div class="mt-3">
+        <button type="submit" class="btn btn-primary" [disabled]="blForm.invalid">Enregistrer</button>
+        <button type="button" class="btn btn-secondary ml-2" [routerLink]="['/bl', blId]">Annuler</button>
+      </div>
+    </form>
+  </div>
+</div>

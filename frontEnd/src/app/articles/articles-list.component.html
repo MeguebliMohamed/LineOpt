@@ -1,0 +1,48 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Articles</h2>
+    <button class="btn btn-primary" routerLink="/articles/create">Ajouter un article</button>
+  </div>
+  
+  <div *ngIf="loading" class="text-center">
+    <div class="spinner-border" role="status">
+      <span class="visually-hidden">Chargement...</span>
+    </div>
+  </div>
+  
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+  
+  <div *ngIf="!loading && articles.length === 0" class="alert alert-info">
+    Aucun article trouvé.
+  </div>
+  
+  <div class="table-responsive" *ngIf="!loading && articles.length > 0">
+    <table class="table table-striped table-hover">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nom</th>
+          <th>Type</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let article of articles">
+          <td>{{ article.id }}</td>
+          <td>{{ article.name }}</td>
+          <td>{{ article.type }}</td>
+          <td>
+            <div class="btn-group">
+              <button class="btn btn-sm btn-outline-primary" [routerLink]="['/articles', article.id]">
+                Détails
+              </button>
+              <button class="btn btn-sm btn-outline-secondary" [routerLink]="['/articles', article.id, 'edit']">
+                Modifier
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
