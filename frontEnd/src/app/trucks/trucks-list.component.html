@@ -1,55 +1,96 @@
 <div class="trucks-list-container">
-  <h2>Camions</h2>
-  
-  <div class="actions-bar">
-    <button [routerLink]="['create']" class="btn btn-primary">
-      <i class="bi bi-plus-circle"></i> Ajouter un camion
+  <div class="header-section">
+    <h2 class="page-title">
+      <mat-icon>local_shipping</mat-icon> Gestion des Camions
+    </h2>
+  </div>
+
+  <div class="filters-bar" [ngClass]="{'collapsed': !filtersVisible}">
+    <button mat-icon-button class="filter-toggle" (click)="toggleFilters()">
+      <mat-icon>filter_list</mat-icon>
+      <span class="filter-toggle-text">{{ filtersVisible ? 'Masquer' : 'Filtres' }}</span>
     </button>
+
+    <div class="filters-content">
+      <mat-form-field appearance="fill" class="filter-group">
+        <mat-label>Statut</mat-label>
+        <mat-select [(ngModel)]="selectedStatus" (selectionChange)="applyFilters()">
+          <mat-option value="">Tous les statuts</mat-option>
+          <mat-option *ngFor="let status of statusOptions" [value]="status.value">
+            {{ status.label }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="filter-group">
+        <mat-label>Client</mat-label>
+        <input matInput [(ngModel)]="clientFilter" (input)="applyFilters()"
+               placeholder="Rechercher un client...">
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
+
+      <div class="button-group">
+        <button mat-flat-button color="primary" [routerLink]="['create']">
+          <mat-icon>add_circle</mat-icon> Ajouter un camion
+        </button>
+        <button mat-stroked-button color="accent" (click)="clearFilters()"
+                [disabled]="!selectedStatus && !clientFilter">
+          <mat-icon>clear</mat-icon> Effacer
+        </button>
+      </div>
+    </div>
   </div>
-  
-  <div *ngIf="loading" class="loading-spinner">
-    <span>Chargement...</span>
+
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner diameter="48"></mat-spinner>
+    <span class="loading-text">Chargement...</span>
   </div>
-  
-  <div *ngIf="error" class="alert alert-danger">
-    {{ error }}
+
+  <div *ngIf="error" class="alert">
+    <mat-icon>error_outline</mat-icon>
+    <span>{{ error }}</span>
   </div>
-  
-  <div *ngIf="!loading && trucks.length === 0" class="no-data">
+
+  <div *ngIf="!loading && filteredTrucks.length === 0" class="no-data">
+    <mat-icon>info</mat-icon>
     <p>Aucun camion trouvé.</p>
   </div>
-  
-  <table *ngIf="!loading && trucks.length > 0" class="table table-striped">
-    <thead>
-      <tr>
-        <th>Matricule</th>
-        <th>Statut</th>
-        <th>Client par défaut</th>
-        <th>Articles</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let truck of trucks">
-        <td>{{ truck.matricule }}</td>
-        <td>
-          <span [ngClass]="'status-badge status-' + truck.statut">
-            {{ statusLabels[truck.statut] }}
-          </span>
-        </td>
-        <td>{{ truck.client_par_defaut || 'Non assigné' }}</td>
-        <td>{{ truck.articles.length }} article(s)</td>
-        <td>
-          <div class="btn-group">
-            <button [routerLink]="[truck.id]" class="btn btn-sm btn-info" title="Voir détails">
-              <i class="bi bi-eye"></i>
-            </button>
-            <button [routerLink]="[truck.id, 'edit']" class="btn btn-sm btn-primary" title="Modifier">
-              <i class="bi bi-pencil"></i>
-            </button>
-          </div>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+
+  <div *ngIf="!loading && filteredTrucks.length > 0" class="cards-container">
+    <div *ngFor="let truck of filteredTrucks" class="truck-card">
+      <div class="truck-card-header">
+        <span class="truck-card-title">{{ truck.matricule }}</span>
+        <span [ngClass]="'status-badge status-' + truck.statut">
+          {{ getStatusLabel(truck.statut) }}
+        </span>
+      </div>
+      <div class="truck-card-content">
+        <div class="info-row">
+          <span class="info-label">Client:</span>
+          <span class="info-value">{{ getClientDisplay(truck.client_par_defaut) }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Articles:</span>
+          <span class="info-value">{{ truck.articles.length }} article(s)</span>
+        </div>
+      </div>
+      <div class="truck-card-actions">
+        <button mat-icon-button color="primary" [routerLink]="[truck.id]" title="Détails">
+          <mat-icon>visibility</mat-icon>
+        </button>
+        <button mat-icon-button color="accent" [routerLink]="[truck.id, 'edit']" title="Modifier">
+          <mat-icon>edit</mat-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <mat-paginator
+    *ngIf="!loading && filteredTrucks.length > 0"
+    [pageSize]="itemsPerPage"
+    [pageSizeOptions]="[5, 10, 25, 50]"
+    [length]="filteredTrucks.length"
+    (page)="onPageChange($event)"
+    showFirstLastButtons>
+  </mat-paginator>
 </div>

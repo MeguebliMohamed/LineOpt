@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, catchError, switchMap, throwError } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
+import { catchError, map, switchMap } from 'rxjs/operators';
 import { Truck, TruckStatus } from './truck.interface';
 import { AuthService } from '../auth/auth.service';
 
@@ -10,37 +11,67 @@ const API_URL = 'http://localhost:8000/api/camions/';
 export class TrucksService {
   constructor(private http: HttpClient, private authService: AuthService) {}
 
+  private validateStatus(status: any): TruckStatus {
+    const validStatuses: TruckStatus[] = [
+      'disponible',
+      'en_attente',
+      'en_pause',
+      'en_panne',
+      'en_entretien',
+      'charge',
+      'sorti'
+    ];
+    return validStatuses.includes(status) ? status : 'disponible';
+  }
+
+  private normalizeTruck(truck: any): Truck {
+    return {
+      id: typeof truck.id === 'number' ? truck.id : undefined,
+      matricule: String(truck.matricule || ''),
+      statut: this.validateStatus(truck.statut),
+      client_par_defaut: typeof truck.client_par_defaut === 'number' ? truck.client_par_defaut : null,
+      articles: Array.isArray(truck.articles) ? truck.articles.map((id: any) => Number(id)).filter((id: number) => !isNaN(id)) : []
+    };
+  }
+
   getTrucks(): Observable<Truck[]> {
-    return this.http.get<Truck[]>(API_URL).pipe(
+    return this.http.get<any[]>(API_URL).pipe(
+      map(trucks => trucks.map(truck => this.normalizeTruck(truck))),
       catchError(error => this.handleError(error))
     );
   }
 
   getTruck(id: number): Observable<Truck> {
-    return this.http.get<Truck>(`${API_URL}${id}/`).pipe(
+    return this.http.get<any>(`${API_URL}${id}/`).pipe(
+      map(truck => this.normalizeTruck(truck)),
       catchError(error => this.handleError(error))
     );
   }
 
   createTruck(data: Truck): Observable<Truck> {
-    return this.http.post<Truck>(API_URL, data).pipe(
+    const payload = {
+      matricule: data.matricule,
+      statut: this.validateStatus(data.statut),
+      client_par_defaut: data.client_par_defaut,
+      articles: Array.isArray(data.articles) ? data.articles : []
+    };
+    return this.http.post<any>(API_URL, payload).pipe(
+      map(truck => this.normalizeTruck(truck)),
       catchError(error => this.handleError(error))
     );
   }
 
   updateTruck(id: number, data: Truck): Observable<Truck> {
-    // Get the current truck data first to ensure we have the complete object
     return this.getTruck(id).pipe(
       switchMap(currentTruck => {
-        // Create a clean payload with the exact format expected by the backend
         const payload = {
-          matricule: data.matricule,
-          statut: data.statut,
-          client_par_defaut: data.client_par_defaut,
-          articles: Array.isArray(data.articles) ? data.articles : []
+          matricule: data.matricule || currentTruck.matricule,
+          statut: this.validateStatus(data.statut),
+          client_par_defaut: data.client_par_defaut !== undefined ? data.client_par_defaut : currentTruck.client_par_defaut,
+          articles: Array.isArray(data.articles) ? data.articles : currentTruck.articles
         };
-        
-        return this.http.put<Truck>(`${API_URL}${id}/`, payload).pipe(
+        return this.http.put<any>(`${API_URL}${id}/`, payload).pipe(
+          map(truck => this.normalizeTruck(truck)),
           catchError(error => this.handleError(error))
         );
       })
@@ -54,19 +85,16 @@ export class TrucksService {
   }
 
   changeStatus(id: number, status: TruckStatus): Observable<Truck> {
-    // Send only the status parameter as expected by the backend
-    return this.http.post<Truck>(`${API_URL}${id}/change_status/`, {
-      status: status // Backend expects 'status', not 'statut'
-    }).pipe(
+    return this.http.post<any>(`${API_URL}${id}/change_status/`, { status }).pipe(
+      map(truck => this.normalizeTruck(truck)),
       catchError(error => this.handleError(error)),
-      // After successful status change, get the updated truck data
       switchMap(() => this.getTruck(id))
     );
   }
 
   private handleError(error: HttpErrorResponse) {
     let errorMessage = 'Une erreur est survenue';
-    
+
     if (error.status === 0) {
       errorMessage = 'Problème de connexion au serveur';
       console.error('Une erreur est survenue:', error.error);
@@ -80,7 +108,7 @@ export class TrucksService {
       errorMessage = `${error.status}: ${error.error?.message || error.statusText}`;
       console.error(`Erreur API ${error.status}:`, error.error);
     }
-    
+
     return throwError(() => new Error(errorMessage));
   }
 }

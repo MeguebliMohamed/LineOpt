@@ -1,45 +1,63 @@
 <div class="truck-form-container">
   <div class="header">
     <h2>Nouveau Camion</h2>
-    <button [routerLink]="['/trucks']" class="btn btn-secondary">
-      <i class="bi bi-arrow-left"></i> Retour
+    <button mat-icon-button [routerLink]="['/trucks']" aria-label="Retour à la liste des camions">
+      <mat-icon>arrow_back</mat-icon>
     </button>
   </div>
-  
-  <div *ngIf="error" class="alert alert-danger">
-    {{ error }}
+
+  <div *ngIf="error" class="alert">
+    <mat-error>{{ error }}</mat-error>
   </div>
-  
-  <form [formGroup]="truckForm" (ngSubmit)="onSubmit()">
-    <div class="mb-3">
-      <label for="matricule" class="form-label">Matricule</label>
-      <input type="text" class="form-control" id="matricule" formControlName="matricule">
-      <div *ngIf="truckForm.get('matricule')?.invalid && truckForm.get('matricule')?.touched" class="text-danger">
+
+  <form [formGroup]="truckForm" (ngSubmit)="onSubmit()" class="form-content">
+    <mat-form-field appearance="outline" class="form-field">
+      <mat-label>Matricule</mat-label>
+      <input matInput formControlName="matricule" placeholder="Ex: TRUCK-001">
+      <mat-error *ngIf="truckForm.get('matricule')?.hasError('required')">
         Matricule est obligatoire
-      </div>
-    </div>
-    
-    <div class="mb-3">
-      <label for="statut" class="form-label">Statut</label>
-      <select class="form-select" id="statut" formControlName="statut">
-        <option *ngFor="let status of statusList" [value]="status[0]">{{ status[1] }}</option>
-      </select>
-    </div>
-    
-    <div class="mb-3">
-      <label for="client_par_defaut" class="form-label">Client par défaut</label>
-      <input type="number" class="form-control" id="client_par_defaut" formControlName="client_par_defaut">
-      <small class="form-text text-muted">Laissez vide si aucun client par défaut</small>
-    </div>
-    
-    <!-- Articles will be managed after creation -->
-    
+      </mat-error>
+      <mat-error *ngIf="truckForm.get('matricule')?.hasError('minlength')">
+        Matricule doit contenir au moins 3 caractères
+      </mat-error>
+      <mat-error *ngIf="truckForm.get('matricule')?.hasError('maxlength')">
+        Matricule ne peut pas dépasser 20 caractères
+      </mat-error>
+      <mat-error *ngIf="truckForm.get('matricule')?.hasError('pattern')">
+        Matricule doit être alphanumérique (lettres, chiffres, tirets)
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="form-field">
+      <mat-label>Statut</mat-label>
+      <mat-select formControlName="statut">
+        <mat-option *ngFor="let status of statusList" [value]="status[0]">
+          {{ status[1] }}
+        </mat-option>
+      </mat-select>
+      <mat-error *ngIf="truckForm.get('statut')?.hasError('required')">
+        Statut est obligatoire
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="form-field">
+      <mat-label>Client par défaut</mat-label>
+      <input matInput formControlName="client_par_defaut" placeholder="Ex: John Doe">
+      <mat-hint>Laissez vide si aucun client par défaut</mat-hint>
+      <mat-error *ngIf="truckForm.get('client_par_defaut')?.hasError('maxlength')">
+        Client ne peut pas dépasser 100 caractères
+      </mat-error>
+      <mat-error *ngIf="truckForm.get('client_par_defaut')?.hasError('pattern')">
+        Client doit contenir uniquement des lettres, espaces, apostrophes ou tirets
+      </mat-error>
+    </mat-form-field>
+
     <div class="form-actions">
-      <button type="submit" [disabled]="truckForm.invalid || saving" class="btn btn-primary">
-        <span *ngIf="saving">Enregistrement...</span>
-        <span *ngIf="!saving">Enregistrer</span>
+      <button mat-raised-button color="primary" type="submit" [disabled]="truckForm.invalid || saving">
+        <mat-icon *ngIf="saving">hourglass_empty</mat-icon>
+        <span>{{ saving ? 'Enregistrement...' : 'Enregistrer' }}</span>
       </button>
-      <button type="button" [routerLink]="['/trucks']" class="btn btn-outline-secondary">
+      <button mat-stroked-button color="warn" type="button" (click)="cancel()" [disabled]="saving">
         Annuler
       </button>
     </div>
