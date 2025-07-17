@@ -1,65 +1,61 @@
 <div class="truck-form-container">
   <div class="header">
     <h2>Nouveau Camion</h2>
-    <button mat-icon-button [routerLink]="['/trucks']" aria-label="Retour à la liste des camions">
-      <mat-icon>arrow_back</mat-icon>
+    <button class="back-button" [routerLink]="['/trucks']" aria-label="Retour à la liste des camions">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M15 18l-6-6 6-6" />
+      </svg>
     </button>
   </div>
 
-  <div *ngIf="error" class="alert">
-    <mat-error>{{ error }}</mat-error>
-  </div>
+  <div *ngIf="error" class="error-message">{{ error }}</div>
 
   <form [formGroup]="truckForm" (ngSubmit)="onSubmit()" class="form-content">
-    <mat-form-field appearance="outline" class="form-field">
-      <mat-label>Matricule</mat-label>
-      <input matInput formControlName="matricule" placeholder="Ex: TRUCK-001">
-      <mat-error *ngIf="truckForm.get('matricule')?.hasError('required')">
+    <div class="form-group">
+      <label for="matricule">Matricule</label>
+      <input id="matricule" type="text" formControlName="matricule" placeholder="Ex: TRUCK-001">
+      <span *ngIf="truckForm.get('matricule')?.hasError('required') && truckForm.get('matricule')?.touched" class="error-text">
         Matricule est obligatoire
-      </mat-error>
-      <mat-error *ngIf="truckForm.get('matricule')?.hasError('minlength')">
+      </span>
+      <span *ngIf="truckForm.get('matricule')?.hasError('minlength') && truckForm.get('matricule')?.touched" class="error-text">
         Matricule doit contenir au moins 3 caractères
-      </mat-error>
-      <mat-error *ngIf="truckForm.get('matricule')?.hasError('maxlength')">
+      </span>
+      <span *ngIf="truckForm.get('matricule')?.hasError('maxlength') && truckForm.get('matricule')?.touched" class="error-text">
         Matricule ne peut pas dépasser 20 caractères
-      </mat-error>
-      <mat-error *ngIf="truckForm.get('matricule')?.hasError('pattern')">
+      </span>
+      <span *ngIf="truckForm.get('matricule')?.hasError('pattern') && truckForm.get('matricule')?.touched" class="error-text">
         Matricule doit être alphanumérique (lettres, chiffres, tirets)
-      </mat-error>
-    </mat-form-field>
+      </span>
+    </div>
 
-    <mat-form-field appearance="outline" class="form-field">
-      <mat-label>Statut</mat-label>
-      <mat-select formControlName="statut">
-        <mat-option *ngFor="let status of statusList" [value]="status[0]">
-          {{ status[1] }}
-        </mat-option>
-      </mat-select>
-      <mat-error *ngIf="truckForm.get('statut')?.hasError('required')">
+    <div class="form-group">
+      <label for="statut">Statut</label>
+      <select id="statut" formControlName="statut">
+        <option *ngFor="let status of statusList" [value]="status[0]">{{ status[1] }}</option>
+      </select>
+      <span *ngIf="truckForm.get('statut')?.hasError('required') && truckForm.get('statut')?.touched" class="error-text">
         Statut est obligatoire
-      </mat-error>
-    </mat-form-field>
+      </span>
+    </div>
 
-    <mat-form-field appearance="outline" class="form-field">
-      <mat-label>Client par défaut</mat-label>
-      <input matInput formControlName="client_par_defaut" placeholder="Ex: John Doe">
-      <mat-hint>Laissez vide si aucun client par défaut</mat-hint>
-      <mat-error *ngIf="truckForm.get('client_par_defaut')?.hasError('maxlength')">
+    <div class="form-group">
+      <label for="client_par_defaut">Client par défaut</label>
+      <input id="client_par_defaut" type="text" formControlName="client_par_defaut" placeholder="Ex: John Doe">
+      <span class="form-hint">Laissez vide si aucun client par défaut</span>
+      <span *ngIf="truckForm.get('client_par_defaut')?.hasError('maxlength') && truckForm.get('client_par_defaut')?.touched" class="error-text">
         Client ne peut pas dépasser 100 caractères
-      </mat-error>
-      <mat-error *ngIf="truckForm.get('client_par_defaut')?.hasError('pattern')">
+      </span>
+      <span *ngIf="truckForm.get('client_par_defaut')?.hasError('pattern') && truckForm.get('client_par_defaut')?.touched" class="error-text">
         Client doit contenir uniquement des lettres, espaces, apostrophes ou tirets
-      </mat-error>
-    </mat-form-field>
+      </span>
+    </div>
 
     <div class="form-actions">
-      <button mat-raised-button color="primary" type="submit" [disabled]="truckForm.invalid || saving">
-        <mat-icon *ngIf="saving">hourglass_empty</mat-icon>
-        <span>{{ saving ? 'Enregistrement...' : 'Enregistrer' }}</span>
+      <button type="submit" class="submit-button" [disabled]="truckForm.invalid || saving">
+        <span *ngIf="saving" class="loading-icon">⌛</span>
+        {{ saving ? 'Enregistrement...' : 'Enregistrer' }}
       </button>
-      <button mat-stroked-button color="warn" type="button" (click)="cancel()" [disabled]="saving">
-        Annuler
-      </button>
+      <button type="button" class="cancel-button" (click)="cancel()" [disabled]="saving">Annuler</button>
     </div>
   </form>
 </div>

@@ -1,96 +1,137 @@
+
 <div class="trucks-list-container">
   <div class="header-section">
     <h2 class="page-title">
-      <mat-icon>local_shipping</mat-icon> Gestion des Camions
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M5 17H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7m7 18h4a2 2 0 0 0 2-2v-6m-9 2H7m8-11V3h4a2 2 0 0 1 2 2v6M7 7h7m0 10v4M7 7v14"/>
+      </svg>
+      Gestion des Camions
     </h2>
   </div>
 
   <div class="filters-bar" [ngClass]="{'collapsed': !filtersVisible}">
-    <button mat-icon-button class="filter-toggle" (click)="toggleFilters()">
-      <mat-icon>filter_list</mat-icon>
+    <button class="filter-toggle" (click)="toggleFilters()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M4 4h16v2.586l-6.293 6.293a1 1 0 0 0-.293.707v4.586l-4 2V15.586a1 1 0 0 0-.293-.707L4 6.586V4z"/>
+      </svg>
       <span class="filter-toggle-text">{{ filtersVisible ? 'Masquer' : 'Filtres' }}</span>
     </button>
 
     <div class="filters-content">
-      <mat-form-field appearance="fill" class="filter-group">
-        <mat-label>Statut</mat-label>
-        <mat-select [(ngModel)]="selectedStatus" (selectionChange)="applyFilters()">
-          <mat-option value="">Tous les statuts</mat-option>
-          <mat-option *ngFor="let status of statusOptions" [value]="status.value">
+      <div class="filter-group">
+        <label for="status-filter">Statut</label>
+        <select id="status-filter" [(ngModel)]="selectedStatus" (ngModelChange)="applyFilters()">
+          <option value="">Tous les statuts</option>
+          <option *ngFor="let status of statusOptions" [value]="status.value">
             {{ status.label }}
-          </mat-option>
-        </mat-select>
-      </mat-form-field>
+          </option>
+        </select>
+      </div>
 
-      <mat-form-field appearance="fill" class="filter-group">
-        <mat-label>Client</mat-label>
-        <input matInput [(ngModel)]="clientFilter" (input)="applyFilters()"
-               placeholder="Rechercher un client...">
-        <mat-icon matSuffix>search</mat-icon>
-      </mat-form-field>
-
+      <div class="filter-group">
+        <label for="client-filter">Client</label>
+        <div class="input-wrapper">
+          <input id="client-filter" type="text" [(ngModel)]="clientFilter" (input)="applyFilters()" placeholder="Rechercher un client...">
+          <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="M21 21l-4.35-4.35"/>
+          </svg>
+        </div>
+      </div>
+      <br>
       <div class="button-group">
-        <button mat-flat-button color="primary" [routerLink]="['create']">
-          <mat-icon>add_circle</mat-icon> Ajouter un camion
+        <button class="add-button" [routerLink]="['create']">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          Ajouter un camion
         </button>
-        <button mat-stroked-button color="accent" (click)="clearFilters()"
-                [disabled]="!selectedStatus && !clientFilter">
-          <mat-icon>clear</mat-icon> Effacer
+        <button class="clear-button" (click)="clearFilters()" [disabled]="!selectedStatus && !clientFilter">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+          Effacer
         </button>
       </div>
     </div>
   </div>
 
   <div *ngIf="loading" class="loading-container">
-    <mat-spinner diameter="48"></mat-spinner>
+    <div class="spinner"></div>
     <span class="loading-text">Chargement...</span>
   </div>
 
   <div *ngIf="error" class="alert">
-    <mat-icon>error_outline</mat-icon>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"/>
+      <path d="M12 8v4M12 16h.01"/>
+    </svg>
     <span>{{ error }}</span>
   </div>
 
   <div *ngIf="!loading && filteredTrucks.length === 0" class="no-data">
-    <mat-icon>info</mat-icon>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"/>
+      <path d="M12 8v4M12 16h.01"/>
+    </svg>
     <p>Aucun camion trouvé.</p>
   </div>
 
-  <div *ngIf="!loading && filteredTrucks.length > 0" class="cards-container">
-    <div *ngFor="let truck of filteredTrucks" class="truck-card">
-      <div class="truck-card-header">
-        <span class="truck-card-title">{{ truck.matricule }}</span>
-        <span [ngClass]="'status-badge status-' + truck.statut">
-          {{ getStatusLabel(truck.statut) }}
-        </span>
-      </div>
-      <div class="truck-card-content">
-        <div class="info-row">
-          <span class="info-label">Client:</span>
-          <span class="info-value">{{ getClientDisplay(truck.client_par_defaut) }}</span>
-        </div>
-        <div class="info-row">
-          <span class="info-label">Articles:</span>
-          <span class="info-value">{{ truck.articles.length }} article(s)</span>
-        </div>
-      </div>
-      <div class="truck-card-actions">
-        <button mat-icon-button color="primary" [routerLink]="[truck.id]" title="Détails">
-          <mat-icon>visibility</mat-icon>
-        </button>
-        <button mat-icon-button color="accent" [routerLink]="[truck.id, 'edit']" title="Modifier">
-          <mat-icon>edit</mat-icon>
-        </button>
-      </div>
-    </div>
+  <div *ngIf="!loading && filteredTrucks.length > 0" class="table-container">
+    <table class="trucks-table">
+      <thead>
+      <tr>
+        <th>Matricule</th>
+        <th>Statut</th>
+        <th>Client</th>
+        <th>Articles</th>
+        <th>Actions</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr *ngFor="let truck of paginatedTrucks">
+        <td>{{ truck.matricule }}</td>
+        <td>
+            <span [ngClass]="'status-badge status-' + truck.statut">
+              {{ getStatusLabel(truck.statut) }}
+            </span>
+        </td>
+        <td>{{ getClientDisplay(truck.client_par_defaut) }}</td>
+        <td>{{ truck.articles.length }} article(s)</td>
+        <td class="actions">
+          <button class="action-button" [routerLink]="[truck.id]" title="Détails">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+          <button class="action-button delete" (click)="deleteTruck(Number(truck.id))" title="Supprimer">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 6h18M6 6V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2m-12 0v14a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V6m-9 4v10m4-10v10"/>
+            </svg>
+          </button>
+        </td>
+      </tr>
+      </tbody>
+    </table>
   </div>
 
-  <mat-paginator
-    *ngIf="!loading && filteredTrucks.length > 0"
-    [pageSize]="itemsPerPage"
-    [pageSizeOptions]="[5, 10, 25, 50]"
-    [length]="filteredTrucks.length"
-    (page)="onPageChange($event)"
-    showFirstLastButtons>
-  </mat-paginator>
+  <div *ngIf="!loading && filteredTrucks.length > 0" class="paginator">
+    <div class="paginator-controls">
+      <button (click)="previousPage()" [disabled]="pageIndex === 0">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M15 18l-6-6 6-6"/>
+        </svg>
+      </button>
+      <span>Page {{ pageIndex + 1 }} sur {{ pageCount }}</span>
+      <button (click)="nextPage()" [disabled]="!hasNextPage()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 18l6-6-6-6"/>
+        </svg>
+      </button>
+      <select [(ngModel)]="itemsPerPage" (ngModelChange)="onPageSizeChange()">
+        <option *ngFor="let size of [5, 10, 25, 50]" [value]="size">{{ size }}</option>
+      </select>
+    </div>
+  </div>
 </div>

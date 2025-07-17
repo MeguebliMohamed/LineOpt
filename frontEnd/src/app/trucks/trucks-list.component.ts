@@ -1,16 +1,8 @@
-import { CdkTableDataSourceInput } from '@angular/cdk/table';
-import { Component, OnInit, ViewChild } from '@angular/core';
+
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { MatTableModule, MatTableDataSource } from '@angular/material/table';
-import { MatSort, MatSortModule, Sort } from '@angular/material/sort';
-import { MatPaginator, MatPaginatorModule, PageEvent } from '@angular/material/paginator';
-import { MatSelectModule } from '@angular/material/select';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { TrucksService } from './trucks.service';
 import { Truck, TRUCK_STATUS_LABELS, TruckStatus } from './truck.interface';
 
@@ -20,15 +12,7 @@ import { Truck, TRUCK_STATUS_LABELS, TruckStatus } from './truck.interface';
   imports: [
     CommonModule,
     RouterModule,
-    FormsModule,
-    MatTableModule,
-    MatSortModule,
-    MatPaginatorModule,
-    MatSelectModule,
-    MatInputModule,
-    MatButtonModule,
-    MatIconModule,
-    MatProgressSpinnerModule
+    FormsModule
   ],
   templateUrl: './trucks-list.component.html',
   styleUrls: ['./trucks-list.component.css']
@@ -36,14 +20,13 @@ import { Truck, TRUCK_STATUS_LABELS, TruckStatus } from './truck.interface';
 export class TrucksListComponent implements OnInit {
   trucks: Truck[] = [];
   filteredTrucks: Truck[] = [];
-  dataSource = new MatTableDataSource<Truck>([]);
-  displayedColumns: string[] = ['matricule', 'statut', 'client_par_defaut', 'articles', 'actions'];
   loading = false;
   error = '';
   statusLabels = TRUCK_STATUS_LABELS;
   selectedStatus: TruckStatus | '' = '';
   clientFilter: string = '';
   itemsPerPage: number = 10;
+  pageIndex: number = 0;
   filtersVisible: boolean = true;
 
   statusOptions: { value: TruckStatus; label: string }[] = [
@@ -56,18 +39,10 @@ export class TrucksListComponent implements OnInit {
     { value: 'sorti', label: TRUCK_STATUS_LABELS['sorti'] }
   ];
 
-  @ViewChild(MatSort) sort!: MatSort;
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-
   constructor(private trucksService: TrucksService) {}
 
   ngOnInit(): void {
     this.loadTrucks();
-  }
-
-  ngAfterViewInit(): void {
-    this.dataSource.sort = this.sort;
-    this.dataSource.paginator = this.paginator;
   }
 
   loadTrucks(): void {
@@ -95,11 +70,7 @@ export class TrucksListComponent implements OnInit {
         : true;
       return matchesStatus && matchesClient;
     });
-    this.dataSource.data = this.filteredTrucks;
-    if (this.paginator) {
-      this.paginator.length = this.filteredTrucks.length;
-      this.paginator.firstPage();
-    }
+    this.pageIndex = 0;
   }
 
   clearFilters(): void {
@@ -108,34 +79,8 @@ export class TrucksListComponent implements OnInit {
     this.applyFilters();
   }
 
-  sortData(sort: Sort): void {
-    const data = [...this.filteredTrucks];
-    if (!sort.active || sort.direction === '') {
-      this.filteredTrucks = data;
-      return;
-    }
-
-    this.filteredTrucks = data.sort((a, b) => {
-      const isAsc = sort.direction === 'asc';
-      switch (sort.active) {
-        case 'matricule':
-          return compare(a.matricule, b.matricule, isAsc);
-        case 'statut':
-          return compare(a.statut, b.statut, isAsc);
-        case 'client_par_defaut':
-          return compare(a.client_par_defaut ?? '', b.client_par_defaut ?? '', isAsc);
-        case 'articles':
-          return compare(a.articles.length, b.articles.length, isAsc);
-        default:
-          return 0;
-      }
-    });
-    this.dataSource.data = this.filteredTrucks;
-  }
-
-  onPageChange(event: PageEvent): void {
-    this.itemsPerPage = event.pageSize;
-    this.dataSource.data = this.filteredTrucks;
+  onPageSizeChange(): void {
+    this.pageIndex = 0;
   }
 
   getStatusLabel(status: TruckStatus): string {
@@ -149,8 +94,50 @@ export class TrucksListComponent implements OnInit {
   toggleFilters(): void {
     this.filtersVisible = !this.filtersVisible;
   }
-}
 
-function compare(a: string | number, b: string | number, isAsc: boolean): number {
-  return (a < b ? -1 : 1) * (isAsc ? 1 : -1);
+  deleteTruck(id: number): void {
+    if (confirm('Voulez-vous vraiment supprimer ce camion ?')) {
+      this.loading = true;
+      this.trucksService.deleteTruck(id).subscribe({
+        next: () => {
+          this.trucks = this.trucks.filter(truck => truck.id !== id);
+          this.applyFilters();
+          this.loading = false;
+        },
+        error: (err) => {
+          this.error = err.message || 'Échec de la suppression du camion';
+          this.loading = false;
+          console.error('Error deleting truck:', err);
+        }
+      });
+    }
+  }
+
+  get paginatedTrucks(): Truck[] {
+    const start = this.pageIndex * this.itemsPerPage;
+    const end = start + this.itemsPerPage;
+    return this.filteredTrucks.slice(start, end);
+  }
+
+  get pageCount(): number {
+    return Math.ceil(this.filteredTrucks.length / this.itemsPerPage);
+  }
+
+  hasNextPage(): boolean {
+    return (this.pageIndex + 1) * this.itemsPerPage < this.filteredTrucks.length;
+  }
+
+  previousPage(): void {
+    if (this.pageIndex > 0) {
+      this.pageIndex--;
+    }
+  }
+
+  nextPage(): void {
+    if (this.hasNextPage()) {
+      this.pageIndex++;
+    }
+  }
+
+  protected readonly Number = Number;
 }

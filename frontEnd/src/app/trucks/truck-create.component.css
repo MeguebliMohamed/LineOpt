@@ -1,58 +1,151 @@
+
 .truck-form-container {
-  max-width: 600px;
-  margin: 40px auto;
-  padding: 24px;
+  max-width: 500px;
+  width: 100%;
+  margin: 20px auto;
+  padding: 30px;
   background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-  font-family: 'Inter', sans-serif;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  font-family: 'Roboto', sans-serif;
 }
 
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 30px;
 }
 
 .header h2 {
   font-size: 1.8rem;
+  color: #2d3748;
+  margin: 0;
   font-weight: 500;
-  color: #1a202c;
+}
+
+.back-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.back-button:hover {
+  background-color: #edf2f7;
+  transform: translateY(-2px);
+}
+
+.error-message {
+  background-color: #fef4f4;
+  color: #e53e3e;
+  padding: 15px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  font-size: 0.9rem;
 }
 
 .form-content {
+  display: grid;
+  gap: 20px;
+}
+
+.form-group {
   display: flex;
   flex-direction: column;
-  gap: 16px;
 }
 
-.form-field {
-  width: 100%;
+label {
+  font-size: 0.9rem;
+  color: #4a5568;
+  margin-bottom: 8px;
+  font-weight: 500;
 }
 
-.alert {
-  padding: 16px;
-  border-radius: 8px;
-  margin-bottom: 24px;
+input, select {
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 1rem;
+  color: #2d3748;
+  background-color: #f7fafc;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+input:focus, select:focus {
+  outline: none;
+  border-color: #2b6cb0;
+  box-shadow: 0 0 0 3px rgba(43, 108, 176, 0.1);
+}
+
+input.error, select.error {
+  border-color: #e53e3e;
+}
+
+.error-text {
+  color: #e53e3e;
+  font-size: 0.85rem;
+  margin-top: 5px;
+}
+
+.form-hint {
+  color: #718096;
+  font-size: 0.85rem;
+  margin-top: 5px;
 }
 
 .form-actions {
   display: flex;
-  gap: 16px;
-  margin-top: 24px;
+  gap: 15px;
   justify-content: flex-end;
+  margin-top: 25px;
 }
 
-button[disabled] {
-  opacity: 0.6;
+button {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.submit-button {
+  background-color: #2b6cb0;
+  color: #ffffff;
+}
+
+.submit-button:hover:not(:disabled) {
+  background-color: #2c5282;
+  transform: translateY(-2px);
+}
+
+.cancel-button {
+  background-color: #edf2f7;
+  color: #e53e3e;
+}
+
+.cancel-button:hover:not(:disabled) {
+  background-color: #e2e8f0;
+  transform: translateY(-2px);
+}
+
+button:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
-@media (max-width: 600px) {
+.loading-icon {
+  margin-right: 8px;
+}
+
+@media (max-width: 480px) {
   .truck-form-container {
-    margin: 16px;
-    padding: 16px;
+    margin: 10px;
+    padding: 20px;
   }
 
   .header h2 {
@@ -61,7 +154,7 @@ button[disabled] {
 
   .form-actions {
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
   }
 
   .form-actions button {

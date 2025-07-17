@@ -48,7 +48,7 @@ export class TrucksService {
     );
   }
 
-  createTruck(data: Truck): Observable<Truck> {
+  createTruck(data: Partial<Truck>): Observable<Truck> {
     const payload = {
       matricule: data.matricule,
       statut: this.validateStatus(data.statut),
